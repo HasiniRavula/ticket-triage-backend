@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartDesk AI — Intelligent Triage System</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Plus Jakarta Sans', 'sans-serif'] },
+          colors: {
+            brand: { 50: '#eef2ff', 100: '#e0e7ff', 500: '#6366f1', 600: '#4f46e5', 700: '#4338ca' }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-[#f8fafc] text-slate-800 min-h-screen flex flex-col font-sans">
+
+  <!-- Header -->
+  <header class="bg-white/90 backdrop-blur-md border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+    <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="h-10 w-10 rounded-xl bg-brand-600 flex items-center justify-center text-white shadow-md shadow-brand-500/20">
+          <i data-lucide="cpu" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <h1 class="text-base font-extrabold text-slate-900 leading-tight">SmartDesk <span class="text-brand-600">AI</span></h1>
+          <p class="text-[11px] text-slate-400 font-medium">Customer Support Ticket Triage Engine</p>
+        </div>
+      </div>
+      <div class="flex items-center space-x-3">
+        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/60">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse mr-2"></span> System Ready
+        </span>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-6 py-8 grid grid-cols-1 lg:grid-cols-12 gap-8 flex-1">
+    
+    <!-- LEFT PANEL: Ticket Simulation & Analytics -->
+    <div class="lg:col-span-5 space-y-6">
+      
+      <!-- Analytics Counters -->
+      <div class="grid grid-cols-3 gap-3">
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+          <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Total</span>
+          <p id="statTotal" class="text-2xl font-black text-slate-800 mt-0.5">0</p>
+        </div>
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+          <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Open</span>
+          <p id="statOpen" class="text-2xl font-black text-brand-600 mt-0.5">0</p>
+        </div>
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+          <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Reviews</span>
+          <p id="statReview" class="text-2xl font-black text-amber-500 mt-0.5">0</p>
+        </div>
+      </div>
+
+      <!-- Live Department Inflow Distribution Card -->
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-3">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+          <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider">Department Inflow Distribution</h3>
+          <span id="reviewRateBadge" class="text-[10px] font-bold px-2 py-0.5 rounded bg-brand-50 text-brand-700">0% Reviewed</span>
+        </div>
+        
+        <div id="queueDistributionList" class="space-y-2.5 pt-1 text-xs">
+          <p class="text-slate-400 text-center py-2 text-[11px]">Collecting triage distribution...</p>
+        </div>
+      </div>
+
+      <!-- Ticket Creation Form -->
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+        <h2 class="text-sm font-bold text-slate-900 mb-1">Simulate Ticket Intake</h2>
+        <p class="text-xs text-slate-400 mb-4">Run raw text through your queue & priority models</p>
+
+        <form id="ticketForm" class="space-y-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Subject</label>
+            <input type="text" id="subject" required placeholder="e.g. Double charged on renewal"
+              class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-brand-500">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Ticket Body</label>
+            <textarea id="body" required rows="4" placeholder="Describe the issue..."
+              class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-brand-500"></textarea>
+          </div>
+          <button type="submit" id="submitBtn"
+            class="w-full bg-brand-600 hover:bg-brand-700 text-white font-semibold py-2.5 px-4 rounded-xl text-xs transition shadow-md shadow-brand-500/25 flex items-center justify-center space-x-2">
+            <i data-lucide="sparkles" class="w-4 h-4"></i>
+            <span id="btnText">Triage & Predict Ticket</span>
+          </button>
+        </form>
+
+        <!-- Quick Pre-fill Samples -->
+        <div class="mt-6 pt-4 border-t border-slate-100">
+          <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Preset Test Samples</p>
+          <div class="space-y-2">
+            <button onclick="setSample('Billing issue', 'I was charged twice on my invoice #9821 this month. Please issue an immediate refund.')"
+              class="w-full text-left text-xs bg-slate-50 hover:bg-slate-100 p-2.5 rounded-lg border border-slate-200/70 transition">
+              💳 <b>Billing:</b> Duplicate subscription charge
+            </button>
+            <button onclick="setSample('Server 500 Outage', 'Our production database is throwing 500 errors and users cannot save data.')"
+              class="w-full text-left text-xs bg-slate-50 hover:bg-slate-100 p-2.5 rounded-lg border border-slate-200/70 transition">
+              🔥 <b>Technical:</b> High-severity database outage
+            </button>
+            <button onclick="setSample('Account locked out', 'Entered wrong password and now my 2FA authentication is blocked completely.')"
+              class="w-full text-left text-xs bg-slate-50 hover:bg-slate-100 p-2.5 rounded-lg border border-slate-200/70 transition">
+              🔒 <b>Account:</b> MFA locked out
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL: Live Triaged Tickets Feed -->
+    <div class="lg:col-span-7 flex flex-col space-y-4">
+      
+      <!-- Search, Queue Filter & Controls Header -->
+      <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-2">
+            <i data-lucide="inbox" class="w-4 h-4 text-slate-400"></i>
+            <span class="text-xs font-bold text-slate-800">Triage Queue Log</span>
+            <span id="ticketBadge" class="text-[11px] font-semibold bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full">0 tickets</span>
+          </div>
+          <button onclick="loadData()" class="p-1.5 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition" title="Refresh">
+            <i data-lucide="rotate-cw" class="w-4 h-4"></i>
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-12 gap-2 pt-2 border-t border-slate-100">
+          <div class="sm:col-span-7">
+            <input type="text" id="searchInput" oninput="applyFilters()" placeholder="Search tickets by keyword..." 
+              class="w-full text-xs px-3 py-1.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500 bg-slate-50">
+          </div>
+          <div class="sm:col-span-5">
+            <select id="queueFilter" onchange="applyFilters()" 
+              class="w-full text-xs px-2.5 py-1.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500 bg-slate-50 font-medium text-slate-600">
+              <option value="ALL">All Departments</option>
+              <option value="Technical Support">Technical Support</option>
+              <option value="Billing and Payments">Billing & Payments</option>
+              <option value="Account">Account</option>
+              <option value="REVIEW_NEEDED">⚠️ Review Needed Only</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tickets Scroll Container -->
+      <div id="ticketsList" class="space-y-3.5 overflow-y-auto max-h-[750px] pr-1">
+        <!-- Rendered Tickets -->
+      </div>
+    </div>
+  </main>
+
+  <script>
+    let allTicketsCache = [];
+
+    function setSample(sub, bod) {
+      document.getElementById('subject').value = sub;
+      document.getElementById('body').value = bod;
+    }
+
+    async function loadData() {
+      try {
+        const [ticketsRes, analyticsRes] = await Promise.all([
+          fetch('/tickets'),
+          fetch('/analytics')
+        ]);
+
+        if (ticketsRes.ok) {
+          allTicketsCache = await ticketsRes.json();
+          applyFilters();
+        }
+
+        if (analyticsRes.ok) {
+          const analytics = await analyticsRes.json();
+          document.getElementById('statTotal').innerText = analytics.total_tickets;
+          document.getElementById('statOpen').innerText = analytics.open_tickets;
+          document.getElementById('statReview').innerText = analytics.review_required;
+          document.getElementById('reviewRateBadge').innerText = `${analytics.review_rate}% Reviewed`;
+
+          renderQueueDistribution(analytics.queue_distribution, analytics.total_tickets);
+        }
+      } catch (err) {
+        console.error("Error loading triage data:", err);
+      }
+    }
+
+    function renderQueueDistribution(distribution, total) {
+      const container = document.getElementById('queueDistributionList');
+      if (!distribution || Object.keys(distribution).length === 0 || total === 0) {
+        container.innerHTML = `<p class="text-slate-400 text-center py-2 text-[11px]">No ticket distribution yet.</p>`;
+        return;
+      }
+
+      container.innerHTML = Object.entries(distribution).map(([dept, count]) => {
+        const percentage = Math.round((count / total) * 100);
+        return `
+          <div class="space-y-1">
+            <div class="flex justify-between text-[11px] font-semibold">
+              <span class="text-slate-700">${dept}</span>
+              <span class="text-slate-500">${count} (${percentage}%)</span>
+            </div>
+            <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+              <div class="bg-brand-600 h-full rounded-full transition-all duration-500" style="width: ${percentage}%"></div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function applyFilters() {
+      const query = document.getElementById('searchInput').value.toLowerCase();
+      const selectedQueue = document.getElementById('queueFilter').value;
+
+      const filtered = allTicketsCache.filter(t => {
+        const matchesSearch = t.subject.toLowerCase().includes(query) || t.body.toLowerCase().includes(query);
+        
+        let matchesQueue = true;
+        if (selectedQueue === 'REVIEW_NEEDED') {
+          matchesQueue = t.review_required === true;
+        } else if (selectedQueue !== 'ALL') {
+          matchesQueue = (t.final_queue || t.predicted_queue) === selectedQueue;
+        }
+
+        return matchesSearch && matchesQueue;
+      });
+
+      renderTickets(filtered);
+    }
+
+    function renderTickets(tickets) {
+      const container = document.getElementById('ticketsList');
+      document.getElementById('ticketBadge').innerText = `${tickets.length} tickets`;
+
+      if (tickets.length === 0) {
+        container.innerHTML = `
+          <div class="bg-white rounded-2xl border border-dashed border-slate-300 p-12 text-center text-slate-400 text-xs">
+            No matching tickets found in this view.
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = tickets.map(t => {
+        const currentPriority = (t.final_priority || t.predicted_priority || 'normal').toLowerCase();
+        const isUrgent = ['critical', 'high'].includes(currentPriority);
+        const priorityBadge = isUrgent 
+          ? 'bg-red-50 text-red-700 border-red-200' 
+          : 'bg-slate-100 text-slate-700 border-slate-200';
+
+        // Calculate model certainty percentage from decision_margin
+        let confPercent = 88;
+        if (typeof t.decision_margin === 'number' && t.decision_margin > 0) {
+          confPercent = Math.min(99, Math.max(45, Math.round(t.decision_margin * 100)));
+        } else if (t.review_required) {
+          confPercent = 54;
+        }
+
+        const meterColor = confPercent >= 75 ? 'bg-emerald-500' : (confPercent >= 60 ? 'bg-amber-500' : 'bg-red-500');
+
+        return `
+          <div class="bg-white rounded-2xl p-5 border ${t.review_required ? 'border-amber-300 bg-amber-50/20' : 'border-slate-200'} shadow-sm hover:shadow transition">
+            <div class="flex items-start justify-between gap-4">
+              <div>
+                <span class="text-xs font-bold text-slate-400">#${t.id}</span>
+                <h3 class="text-sm font-bold text-slate-800">${t.subject}</h3>
+              </div>
+              <div class="flex items-center space-x-2">
+                <span class="text-[11px] font-bold px-2.5 py-1 rounded-lg border ${priorityBadge}">
+                  ${t.final_priority || t.predicted_priority || 'Normal'}
+                </span>
+                <span class="text-[11px] font-bold px-2.5 py-1 rounded-lg bg-indigo-50 border border-indigo-100 text-brand-700">
+                  ${t.final_queue || t.predicted_queue || 'General'}
+                </span>
+              </div>
+            </div>
+
+            <p class="text-xs text-slate-600 my-3 bg-slate-50 p-3 rounded-xl border border-slate-100">
+              ${t.body}
+            </p>
+
+            <!-- Model Confidence Meter -->
+            <div class="mb-3 bg-slate-50/80 p-2.5 rounded-xl border border-slate-100 flex items-center justify-between text-[11px]">
+              <div class="flex items-center space-x-2">
+                <span class="text-slate-500 font-medium">Model Certainty:</span>
+                <span class="font-bold text-slate-800">${confPercent}%</span>
+              </div>
+              <div class="w-32 bg-slate-200 h-1.5 rounded-full overflow-hidden">
+                <div class="${meterColor} h-full rounded-full transition-all duration-500" style="width: ${confPercent}%"></div>
+              </div>
+            </div>
+
+            <!-- Footer: Status and Action Buttons -->
+            <div class="flex items-center justify-between text-xs pt-2 border-t border-slate-100">
+              <span class="text-slate-400">Status: <b class="${t.status === 'reviewed' ? 'text-blue-600' : 'text-slate-700'} capitalize">${t.status}</b></span>
+              <div class="flex items-center space-x-2">
+                ${t.review_required 
+                  ? `<span class="text-amber-600 font-bold text-[11px] mr-2">⚠️ Review Needed</span>` 
+                  : `<span class="text-emerald-600 font-bold text-[11px] mr-2">✓ Auto-Routed</span>`}
+                
+                ${t.status === 'open' ? `
+                  <button onclick="openReviewModal(${t.id}, '${t.predicted_queue}', '${t.predicted_priority}')" 
+                    class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-[11px] font-semibold transition">
+                    Review / Override
+                  </button>
+                ` : `
+                  <span class="text-xs text-slate-400 font-medium">✓ Closed</span>
+                `}
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+      lucide.createIcons();
+    }
+
+    async function openReviewModal(ticketId, currentQueue, currentPriority) {
+      const newQueue = prompt(`Reviewing Ticket #${ticketId}\nEnter Queue (e.g. Technical Support, Billing and Payments):`, currentQueue);
+      if (!newQueue) return;
+
+      const newPriority = prompt(`Enter Priority (low, medium, high, critical):`, currentPriority);
+      if (!newPriority) return;
+
+      const note = prompt(`Enter Reviewer Note:`, "Confirmed by agent");
+
+      try {
+        const res = await fetch(`/review/${ticketId}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            final_queue: newQueue,
+            final_priority: newPriority,
+            reviewer_note: note || ""
+          })
+        });
+        if (res.ok) {
+          loadData();
+        } else {
+          alert("Failed to submit review");
+        }
+      } catch (err) {
+        alert("Error updating ticket review");
+      }
+    }
+
+    document.getElementById('ticketForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('submitBtn');
+      const text = document.getElementById('btnText');
+      btn.disabled = true;
+      text.innerText = "Processing ML Pipeline...";
+
+      const payload = {
+        subject: document.getElementById('subject').value,
+        body: document.getElementById('body').value
+      };
+
+      try {
+        const res = await fetch('/tickets', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (res.ok) {
+          document.getElementById('subject').value = '';
+          document.getElementById('body').value = '';
+          loadData();
+        } else {
+          alert("Error processing ticket");
+        }
+      } catch (err) {
+        alert("Failed to connect to backend server");
+      } finally {
+        btn.disabled = false;
+        text.innerText = "Triage & Predict Ticket";
+      }
+    });
+
+    window.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+      loadData();
+    });
+  </script>
+</body>
+</html>
